@@ -1,14 +1,132 @@
-import React, { useState, useEffect, useRef, lazy, Suspense, useCallback } from 'react'; // Added useCallback
+import React, { useState, useEffect, useRef, lazy, Suspense, useCallback } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import './App.css';
 import PunchCard from './components/PunchCard';
 import QRCodeDisplay from './components/QRCodeDisplay';
-import { db } from './firebaseConfig'; // Import Firestore instance
+import { db } from './firebaseConfig';
 import { doc, getDoc, setDoc, onSnapshot, serverTimestamp } from "firebase/firestore";
 
-const ClaimPunchPage = lazy(() => import('./components/ClaimPunchPage')); // Dynamically import ClaimPunchPage
+const ClaimPunchPage = lazy(() => import('./components/ClaimPunchPage'));
 
 const CORRECT_PIN = "1234";
+
+// Define MainAppContent outside of the App component
+const MainAppContent = ({
+  isAdminUnlocked,
+  pinInput,
+  handlePinInputChange,
+  handlePinSubmit,
+  handleLockAdmin,
+  customerPhoneNumber,
+  handlePhoneNumberChange,
+  customerNameInput,
+  handleCustomerNameChange,
+  loadCustomerData,
+  isLoadingCustomer,
+  activeCustomerData,
+  currentPunches,
+  totalPunches,
+  isRewardAvailable,
+  addPunch,
+  isSavingPunch,
+  handleGeneratePunchQrCode,
+  redeemReward,
+  isRedeemingReward,
+  feedbackMessage,
+  isPunchQrModalOpen,
+  actionableQrUrl,
+  setIsPunchQrModalOpen
+}) => (
+  <>
+    {feedbackMessage.text && (
+      <div className={`feedback-message ${feedbackMessage.type} ${feedbackMessage.type === 'error' ? 'feedback-error' : feedbackMessage.type === 'success' ? 'feedback-success' : 'feedback-info'}`}>
+        {feedbackMessage.text}
+      </div>
+    )}
+
+    {!isAdminUnlocked ? (
+      <div className="admin-lock compact-section">
+        <h4>Admin Access</h4>
+        <input
+          type="password"
+          value={pinInput}
+          onChange={handlePinInputChange}
+          placeholder="Enter PIN"
+          className="pin-input compact-input"
+        />
+        <button onClick={handlePinSubmit} className="admin-button compact-button">Unlock</button>
+      </div>
+    ) : (
+      <div className="admin-unlocked">
+        <div className="admin-controls-header compact-header">
+          <h4>Admin Controls</h4>
+          <button onClick={handleLockAdmin} className="admin-button lock-button compact-button danger-button">Lock</button>
+        </div>
+
+        <div className="customer-management compact-section">
+          <h5>Load/Create Customer</h5>
+          <div className="input-group compact-input-group">
+            <input
+              type="tel"
+              value={customerPhoneNumber}
+              onChange={handlePhoneNumberChange}
+              placeholder="Phone Number"
+              className="customer-input compact-input"
+              disabled={isLoadingCustomer}
+            />
+            <input
+              type="text"
+              value={customerNameInput}
+              onChange={handleCustomerNameChange}
+              placeholder="Name (Optional)"
+              className="customer-input compact-input"
+              disabled={isLoadingCustomer}
+            />
+            <button onClick={loadCustomerData} disabled={isLoadingCustomer || (!customerPhoneNumber.trim())} className="action-button compact-button">
+              {isLoadingCustomer ? "Loading..." : "Load/Create"}
+            </button>
+          </div>
+        </div>
+
+        {activeCustomerData && (
+          <div className="customer-info compact-section">
+            <div className="customer-details">
+              <h5>{activeCustomerData.name || "N/A"} ({activeCustomerData.id})</h5>
+              <PunchCard currentPunches={currentPunches} totalPunches={totalPunches} isRewardAvailable={isRewardAvailable} />
+            </div>
+            
+            <div className="actions-group compact-actions-group">
+              <button onClick={addPunch} disabled={isSavingPunch || currentPunches >= totalPunches || isLoadingCustomer} className="action-button compact-button">
+                {isSavingPunch ? "..." : "Add Punch"}
+              </button>
+              <button 
+                onClick={handleGeneratePunchQrCode} 
+                disabled={!activeCustomerData || currentPunches >= totalPunches || isLoadingCustomer}
+                className="action-button compact-button qr-button"
+              >
+                Generate Punch QR
+              </button>
+              <button onClick={redeemReward} disabled={isRedeemingReward || !isRewardAvailable || isLoadingCustomer} className="action-button redeem-button compact-button danger-button">
+                {isRedeemingReward ? "..." : "Redeem"}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    )}
+
+    {isPunchQrModalOpen && actionableQrUrl && (
+      <div className="modal-overlay" onClick={() => setIsPunchQrModalOpen(false)}>
+        <div className="modal-content compact-modal" onClick={(e) => e.stopPropagation()}>
+          <h4>Scan to Get Punch</h4>
+          <QRCodeDisplay value={actionableQrUrl} size={200} /> 
+          <p className="qr-url-display small-text">{actionableQrUrl}</p>
+          <button onClick={() => setIsPunchQrModalOpen(false)} className="admin-button compact-button">Close</button>
+        </div>
+      </div>
+    )}
+  </>
+);
 
 function App() {
   const [currentPunches, setCurrentPunches] = useState(0);
@@ -42,7 +160,7 @@ function App() {
       setCurrentPunches(0);
       setIsRewardAvailable(false);
     }
-  }, [activeCustomerData, totalPunches]);
+  }, [activeCustomerData, totalPunches, customerNameInput]);
 
   useEffect(() => {
     return () => {
@@ -56,7 +174,7 @@ function App() {
     setFeedbackMessage({ text, type });
     setTimeout(() => {
       setFeedbackMessage({ text: "", type: "" });
-    }, 2500); // Slightly shorter feedback display
+    }, 2500);
   };
 
   const handleGeneratePunchQrCode = () => {
@@ -70,7 +188,6 @@ function App() {
     }
 
     const uniqueClaimToken = `PUNCH_TOKEN_${activeCustomerData.id}_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
-    // Updated to reflect GitHub Pages deployment URL structure
     const claimUrl = `https://ufoger-usa.github.io/loyalty_app/claim?token=${uniqueClaimToken}`;
 
     setActionableQrUrl(claimUrl);
@@ -97,9 +214,6 @@ function App() {
     const newPunches = activeCustomerData.punches < totalPunches ? activeCustomerData.punches + 1 : activeCustomerData.punches;
 
     const customerNameToSave = activeCustomerData.name || customerNameInput.trim();
-
-    const updatedCustomerDataForState = { ...activeCustomerData, punches: newPunches, name: customerNameToSave };
-    setActiveCustomerData(updatedCustomerDataForState);
 
     try {
       const customerRef = doc(db, "customers", activeCustomerData.id);
@@ -131,13 +245,6 @@ function App() {
     setFeedbackMessage({ text: "", type: "" });
     const customerNameFromData = activeCustomerData.name || "Customer";
 
-    const updatedCustomerDataForState = {
-      ...activeCustomerData,
-      punches: 0,
-      lastRewardRedeemedAt: new Date().toISOString()
-    };
-    setActiveCustomerData(updatedCustomerDataForState);
-
     try {
       const customerRef = doc(db, "customers", activeCustomerData.id);
       await setDoc(customerRef,
@@ -159,7 +266,7 @@ function App() {
 
   const handlePinInputChange = useCallback((event) => {
     setPinInput(event.target.value);
-  }, []); // No dependencies, setPinInput is stable
+  }, []);
 
   const handlePinSubmit = () => {
     if (pinInput === CORRECT_PIN) {
@@ -186,13 +293,13 @@ function App() {
 
   const handlePhoneNumberChange = useCallback((event) => {
     setCustomerPhoneNumber(event.target.value);
-  }, []); // No dependencies, setCustomerPhoneNumber is stable
+  }, []);
 
   const handleCustomerNameChange = useCallback((event) => {
     setCustomerNameInput(event.target.value);
-  }, []); // No dependencies, setCustomerNameInput is stable
+  }, []);
 
-  const loadCustomerData = async () => {
+  const loadCustomerData = useCallback(async () => {
     const phoneNumber = customerPhoneNumber.trim();
     const nameToSave = customerNameInput.trim();
 
@@ -207,7 +314,6 @@ function App() {
     }
 
     setIsLoadingCustomer(true);
-    setActiveCustomerData(null);
     setFeedbackMessage({ text: "", type: "" });
 
     const customerId = phoneNumber;
@@ -215,6 +321,7 @@ function App() {
 
     try {
       unsubscribeCustomerListenerRef.current = onSnapshot(customerRef, async (docSnap) => {
+        setIsLoadingCustomer(false);
         if (docSnap.exists()) {
           const data = docSnap.data();
           const customerData = {
@@ -226,25 +333,19 @@ function App() {
             updatedAt: data.updatedAt
           };
           setActiveCustomerData(customerData);
-          if (data.name) setCustomerNameInput(data.name);
 
           if (nameToSave && nameToSave !== data.name) {
             await setDoc(customerRef, { name: nameToSave, updatedAt: serverTimestamp() }, { merge: true });
-            setActiveCustomerData(prev => ({ ...prev, name: nameToSave }));
             showFeedback("Customer name updated.", "success");
           } else if (!data.name && nameToSave) {
             await setDoc(customerRef, { name: nameToSave, updatedAt: serverTimestamp() }, { merge: true });
-            setActiveCustomerData(prev => ({ ...prev, name: nameToSave }));
             showFeedback("Customer name added.", "success");
           } else {
             showFeedback(`Customer ${data.name || customerId} loaded.`, "info");
           }
 
         } else {
-          if (!nameToSave) {
-            showFeedback("New customer. Please consider adding a name.", "warning");
-          }
-          const newCustomer = {
+          const newCustomerData = {
             id: customerId,
             punches: 0,
             name: nameToSave,
@@ -252,16 +353,9 @@ function App() {
             updatedAt: serverTimestamp(),
             lastRewardRedeemedAt: null
           };
-          await setDoc(customerRef, {
-            punches: 0,
-            name: nameToSave,
-            createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp(),
-            lastRewardRedeemedAt: null
-          });
+          await setDoc(customerRef, newCustomerData);
           showFeedback(`New customer ${nameToSave || customerId} created.`, "success");
         }
-        setIsLoadingCustomer(false);
       }, (error) => {
         console.error("Error in Firestore listener:", error);
         showFeedback("Error listening to customer data. Try reloading.", "error");
@@ -281,99 +375,7 @@ function App() {
         unsubscribeCustomerListenerRef.current = null;
       }
     }
-  };
-
-  const MainAppContent = () => (
-    <>
-      {feedbackMessage.text && (
-        <div className={`feedback-message ${feedbackMessage.type} ${feedbackMessage.type === 'error' ? 'feedback-error' : feedbackMessage.type === 'success' ? 'feedback-success' : 'feedback-info'}`}>
-          {feedbackMessage.text}
-        </div>
-      )}
-
-      {!isAdminUnlocked ? (
-        <div className="admin-lock compact-section">
-          <h4>Admin Access</h4>
-          <input
-            type="password"
-            value={pinInput}
-            onChange={handlePinInputChange}
-            placeholder="Enter PIN"
-            className="pin-input compact-input"
-          />
-          <button onClick={handlePinSubmit} className="admin-button compact-button">Unlock</button>
-        </div>
-      ) : (
-        <div className="admin-unlocked">
-          <div className="admin-controls-header compact-header">
-            <h4>Admin Controls</h4>
-            <button onClick={handleLockAdmin} className="admin-button lock-button compact-button danger-button">Lock</button>
-          </div>
-
-          <div className="customer-management compact-section">
-            <h5>Load/Create Customer</h5>
-            <div className="input-group compact-input-group">
-              <input
-                type="tel"
-                value={customerPhoneNumber}
-                onChange={handlePhoneNumberChange}
-                placeholder="Phone Number"
-                className="customer-input compact-input"
-                disabled={isLoadingCustomer}
-              />
-              <input
-                type="text"
-                value={customerNameInput}
-                onChange={handleCustomerNameChange}
-                placeholder="Name (Optional)"
-                className="customer-input compact-input"
-                disabled={isLoadingCustomer}
-              />
-              <button onClick={loadCustomerData} disabled={isLoadingCustomer || (!customerPhoneNumber.trim())} className="action-button compact-button">
-                {isLoadingCustomer ? "Loading..." : "Load/Create"}
-              </button>
-            </div>
-          </div>
-
-          {activeCustomerData && (
-            <div className="customer-info compact-section">
-              <div className="customer-details">
-                <h5>{activeCustomerData.name || "N/A"} ({activeCustomerData.id})</h5>
-                <PunchCard currentPunches={currentPunches} totalPunches={totalPunches} isRewardAvailable={isRewardAvailable} />
-              </div>
-              
-              <div className="actions-group compact-actions-group">
-                <button onClick={addPunch} disabled={isSavingPunch || currentPunches >= totalPunches || isLoadingCustomer} className="action-button compact-button">
-                  {isSavingPunch ? "..." : "Add Punch"}
-                </button>
-                <button 
-                  onClick={handleGeneratePunchQrCode} 
-                  disabled={!activeCustomerData || currentPunches >= totalPunches || isLoadingCustomer}
-                  className="action-button compact-button qr-button"
-                >
-                  Generate Punch QR
-                </button>
-                <button onClick={redeemReward} disabled={isRedeemingReward || !isRewardAvailable || isLoadingCustomer} className="action-button redeem-button compact-button danger-button">
-                  {isRedeemingReward ? "..." : "Redeem"}
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {isPunchQrModalOpen && actionableQrUrl && (
-        <div className="modal-overlay" onClick={() => setIsPunchQrModalOpen(false)}>
-          <div className="modal-content compact-modal" onClick={(e) => e.stopPropagation()}>
-            <h4>Scan to Get Punch</h4>
-            <QRCodeDisplay value={actionableQrUrl} size={200} /> 
-            <p className="qr-url-display small-text">{actionableQrUrl}</p>
-            <button onClick={() => setIsPunchQrModalOpen(false)} className="admin-button compact-button">Close</button>
-          </div>
-        </div>
-      )}
-    </>
-  );
+  }, [customerPhoneNumber, customerNameInput, unsubscribeCustomerListenerRef]);
 
   return (
     <div className="App">
@@ -383,7 +385,34 @@ function App() {
       <main className="App-main">
         <Suspense fallback={<div>Loading page...</div>}>
           <Routes>
-            <Route path="/" element={<MainAppContent />} />
+            <Route path="/" element={
+              <MainAppContent
+                isAdminUnlocked={isAdminUnlocked}
+                pinInput={pinInput}
+                handlePinInputChange={handlePinInputChange}
+                handlePinSubmit={handlePinSubmit}
+                handleLockAdmin={handleLockAdmin}
+                customerPhoneNumber={customerPhoneNumber}
+                handlePhoneNumberChange={handlePhoneNumberChange}
+                customerNameInput={customerNameInput}
+                handleCustomerNameChange={handleCustomerNameChange}
+                loadCustomerData={loadCustomerData}
+                isLoadingCustomer={isLoadingCustomer}
+                activeCustomerData={activeCustomerData}
+                currentPunches={currentPunches}
+                totalPunches={totalPunches}
+                isRewardAvailable={isRewardAvailable}
+                addPunch={addPunch}
+                isSavingPunch={isSavingPunch}
+                handleGeneratePunchQrCode={handleGeneratePunchQrCode}
+                redeemReward={redeemReward}
+                isRedeemingReward={isRedeemingReward}
+                feedbackMessage={feedbackMessage}
+                isPunchQrModalOpen={isPunchQrModalOpen}
+                actionableQrUrl={actionableQrUrl}
+                setIsPunchQrModalOpen={setIsPunchQrModalOpen}
+              />} 
+            />
             <Route path="/claim" element={<ClaimPunchPage />} />
           </Routes>
         </Suspense>
