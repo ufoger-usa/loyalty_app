@@ -1,3 +1,5 @@
+# Loyalty Card App
+
 # Loyalty Programs - Digital Punch Cards and Rewards
 
 This project is a web application for managing loyalty programs, featuring digital punch cards and QR code integration. It's built using React and JavaScript with Vite as the build tool.
@@ -66,3 +68,5 @@ npm run lint
 ## License
 
 (Details to be added)
+
+Triggering new deployment - May 8, 2025
