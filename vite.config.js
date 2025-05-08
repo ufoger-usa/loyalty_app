@@ -6,6 +6,7 @@ export default defineConfig({
   plugins: [react()],
   base: '/loyalty_app/', // Set base path for GitHub Pages
   build: {
+    outDir: 'docs', // Change output directory to 'docs'
     rollupOptions: {
       output: {
         manualChunks(id) {
