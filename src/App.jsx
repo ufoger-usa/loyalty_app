@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useRef, lazy, Suspense, useCallback } from 'react'; // Added useCallback
 import { Routes, Route } from 'react-router-dom';
 import './App.css';
 import PunchCard from './components/PunchCard';
@@ -157,9 +157,9 @@ function App() {
     }
   };
 
-  const handlePinInputChange = (event) => {
+  const handlePinInputChange = useCallback((event) => {
     setPinInput(event.target.value);
-  };
+  }, []); // No dependencies, setPinInput is stable
 
   const handlePinSubmit = () => {
     if (pinInput === CORRECT_PIN) {
@@ -184,13 +184,13 @@ function App() {
     }
   };
 
-  const handlePhoneNumberChange = (event) => {
+  const handlePhoneNumberChange = useCallback((event) => {
     setCustomerPhoneNumber(event.target.value);
-  };
+  }, []); // No dependencies, setCustomerPhoneNumber is stable
 
-  const handleCustomerNameChange = (event) => {
+  const handleCustomerNameChange = useCallback((event) => {
     setCustomerNameInput(event.target.value);
-  };
+  }, []); // No dependencies, setCustomerNameInput is stable
 
   const loadCustomerData = async () => {
     const phoneNumber = customerPhoneNumber.trim();

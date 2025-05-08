@@ -291,6 +291,77 @@ body {
 }
 
 
+/* Media Queries for Responsiveness */
+
+/* Smaller devices (e.g., phones) */
+@media (max-width: 600px) {
+  .App {
+    max-width: 100%; /* Allow full width */
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .App-header.compact-app-header h1 {
+    font-size: 1.1rem;
+  }
+
+  .App-main {
+    padding: var(--compact-padding);
+  }
+
+  .compact-input, .pin-input.compact-input {
+    font-size: 0.95rem; /* Slightly smaller font for inputs on mobile */
+  }
+
+  .compact-button, .admin-button.compact-button, .action-button.compact-button {
+    padding: 10px 12px; /* Slightly larger tap target for buttons */
+    font-size: 0.9rem;
+  }
+
+  .customer-management.compact-section .input-group.compact-input-group {
+    /* Already stacked, which is good for mobile */
+  }
+
+  .actions-group.compact-actions-group {
+    flex-direction: column; /* Stack action buttons vertically */
+  }
+  .actions-group.compact-actions-group .action-button {
+    width: 100%; /* Make buttons full width when stacked */
+    margin-bottom: var(--compact-margin); /* Add some space between stacked buttons */
+  }
+  .actions-group.compact-actions-group .action-button:last-child {
+    margin-bottom: 0;
+  }
+
+  .punch-mark {
+    width: 22px; /* Slightly larger punch marks for better visibility */
+    height: 22px;
+    margin: 3px;
+  }
+
+  .modal-content.compact-modal {
+    width: 90%; /* More responsive modal width */
+    padding: var(--compact-padding);
+  }
+  .modal-content.compact-modal .qr-url-display.small-text {
+    font-size: 0.7rem;
+  }
+
+  .feedback-message {
+    margin-left: var(--compact-padding);
+    margin-right: var(--compact-padding);
+    font-size: 0.8rem;
+  }
+}
+
+/* Tablet-like sizes (optional, if more specific adjustments are needed) */
+/* @media (min-width: 601px) and (max-width: 768px) {
+  .App {
+    max-width: 90%;
+  }
+} */
+
+
 /* Remove old styles that might conflict or are no longer needed */
 .app-container, .app-footer, .punch-card-container h2, .punches span, 
 .qr-code-container, .qr-code-container h2, .qr-code-placeholder, .qr-code-actual,
