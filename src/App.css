@@ -309,17 +309,22 @@ body {
     padding: var(--compact-padding);
   }
 
+  /* Make main content sections and headers full width on mobile */
+  .compact-section,
+  .admin-controls-header.compact-header {
+    width: 100%;
+    box-sizing: border-box;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
   .compact-input, .pin-input.compact-input {
-    font-size: 0.95rem; /* Slightly smaller font for inputs on mobile */
+    font-size: 1rem; /* Adjusted for better readability on mobile */
   }
 
   .compact-button, .admin-button.compact-button, .action-button.compact-button {
     padding: 10px 12px; /* Slightly larger tap target for buttons */
-    font-size: 0.9rem;
-  }
-
-  .customer-management.compact-section .input-group.compact-input-group {
-    /* Already stacked, which is good for mobile */
+    font-size: 0.95rem; /* Adjusted for better readability on mobile */
   }
 
   .actions-group.compact-actions-group {
@@ -350,7 +355,7 @@ body {
   .feedback-message {
     margin-left: var(--compact-padding);
     margin-right: var(--compact-padding);
-    font-size: 0.8rem;
+    font-size: 0.85rem; /* Adjusted for better readability on mobile */
   }
 }
 

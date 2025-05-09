@@ -1,4 +1,5 @@
 // filepath: g:\\UFOGER.com\\Loyalty Programs\\src\\components\\ClaimPunchPage.jsx
+
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { db } from '../firebaseConfig';
@@ -20,16 +21,6 @@ const ClaimPunchPage = () => {
 
     const processPunchClaim = async () => {
       try {
-        // Extract customer ID and other necessary details from the token if they are embedded
-        // For this example, let's assume the token itself is a one-time use document ID
-        // or contains enough info to derive the customer and the punch action.
-
-        // This is a simplified example. In a real app, the token would be validated,
-        // likely against a 'pendingPunches' collection or similar,
-        // and then used to update the actual customer's punch count.
-
-        // For demonstration, let's assume the token format is `PUNCH_TOKEN_${customerId}_${timestamp}_${random}`
-        // and we need to parse customerId from it. This is a placeholder for actual token validation logic.
         if (!token.startsWith("PUNCH_TOKEN_")) {
           setError("Invalid token format.");
           setMessage("");
@@ -42,7 +33,8 @@ const ClaimPunchPage = () => {
             setMessage("");
             return;
         }
-        const customerId = parts[2]; // Assuming customerId is the third part
+        const customerId = parts[2];
+        const customerName = parts.length > 4 ? parts[3] : "Customer"; // Assuming name might be part of token, or default
 
         if (!customerId) {
             setError("Could not identify customer from token.");
@@ -50,11 +42,12 @@ const ClaimPunchPage = () => {
             return;
         }
 
-        // Simulate a delay for processing
         await new Promise(resolve => setTimeout(resolve, 1000));
 
-        // Firestore transaction to update punches
         const customerRef = doc(db, "customers", customerId);
+
+        let finalPunches = 0;
+        const totalPunchesForReward = 10;
 
         await runTransaction(db, async (transaction) => {
           const customerDoc = await transaction.get(customerRef);
@@ -64,33 +57,46 @@ const ClaimPunchPage = () => {
 
           const customerData = customerDoc.data();
           const currentPunches = customerData.punches || 0;
-          const totalPunches = 10; // Assuming totalPunches is 10, ideally this comes from config or customer data
 
-          if (currentPunches >= totalPunches) {
-            setMessage("Reward already available! No more punches can be added.");
-            // Potentially redirect or show a different message
-            setTimeout(() => navigate('/'), 5000);
-            return; // Exit transaction
+          if (currentPunches >= totalPunchesForReward) {
+            finalPunches = currentPunches;
+            setTimeout(() => navigate('/'), 7000);
+            return; 
           }
 
           const newPunches = currentPunches + 1;
+          finalPunches = newPunches;
+
           transaction.update(customerRef, {
             punches: newPunches,
             updatedAt: serverTimestamp(),
-            lastPunchClaimedAt: serverTimestamp() // Track when the punch was claimed
+            lastPunchClaimedAt: serverTimestamp()
           });
-
-          // Here, you might also want to mark the token as used if it's stored in a separate collection
         });
 
-        setMessage(`Punch successfully claimed for customer ${customerId}! You now have ${(await getDoc(customerRef)).data().punches} punches. Redirecting...`);
-        setTimeout(() => navigate('/'), 5000); // Redirect to home or a success page
+        let successMessage = `PUNCH SUCCESSFULLY CLAIMED!`; // Main title
+        let customerInfo = `Customer ID: ${customerId}`;
+        let punchInfo = `You now have ${finalPunches} / ${totalPunchesForReward} punches`;
+        let rewardInfo = "";
+        
+        if (finalPunches >= totalPunchesForReward) {
+          rewardInfo = `CONGRATULATIONS! You've earned a reward!`;
+        } else {
+          const punchesLeft = Math.max(0, totalPunchesForReward - finalPunches);
+          rewardInfo = `Only ${punchesLeft} more punches until your next reward!`;
+        }
+        setMessage({
+          title: successMessage,
+          customer: customerInfo,
+          punches: punchInfo,
+          reward: rewardInfo,
+          redirecting: "Redirecting shortly..."
+        });
 
       } catch (e) {
         console.error("Error processing punch claim:", e);
         setError(`Error: ${e.message || "Could not process your punch. Please try again or contact support."}`);
         setMessage('');
-        // Potentially redirect to an error page or home
         setTimeout(() => navigate('/'), 7000);
       }
     };
@@ -100,24 +106,115 @@ const ClaimPunchPage = () => {
 
   if (error) {
     return (
-      <div style={{ padding: '20px', textAlign: 'center', color: 'red' }}>
-        <h1>Punch Claim Error</h1>
-        <p>{message}</p>
-        <p>{error}</p>
-        <button onClick={() => navigate('/')}>Go to Homepage</button>
+      <div style={{
+        minHeight: '100vh',
+        backgroundColor: '#FFFFFF', // Light theme: Page Background
+        color: '#1C1C1E', // Light theme: Default Text
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '1rem'
+      }}>
+        <div style={{
+          textAlign: 'center',
+          padding: '2rem',
+          backgroundColor: '#FFFFFF', // Light theme: Card Background
+          borderRadius: '1rem',
+          border: '1px solid #D1D1D6', // Light theme: Border
+          boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03)' // Softer shadow
+        }}>
+          <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#BF2C2C' /* Light theme: Error Text */ }}>Punch Claim Error</h1>
+          <p style={{ marginTop: '1rem', color: '#3C3C3E' /* Light theme: Secondary Text */ }}>{error}</p>
+          <button 
+            onClick={() => navigate('/')} 
+            style={{
+              marginTop: '1.5rem',
+              padding: '0.5rem 1rem',
+              backgroundColor: '#E5E5EA', // Light theme: Button Background
+              color: '#1C1C1E', // Light theme: Button Text
+              borderRadius: '0.375rem',
+              fontWeight: '600',
+              border: 'none'
+            }}
+          >Go to Homepage</button>
+        </div>
+      </div>
+    );
+  }
+
+  if (typeof message === 'string' || !message.title) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        backgroundColor: '#FFFFFF', // Light theme: Page Background
+        color: '#1C1C1E', // Light theme: Default Text
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '1rem'
+      }}>
+        <p style={{ fontSize: '1.25rem', animation: 'pulse 1.5s infinite' }}>{typeof message === 'string' ? message : 'Processing your punch...'}</p>
       </div>
     );
   }
 
   return (
     <div style={{
-      padding: '20px',
-      textAlign: 'center',
-      cursor: (message === 'Processing your punch...' && !error) ? 'wait' : 'auto'
+      backgroundColor: '#FFFFFF', // Light theme: Page Background
+      color: '#1C1C1E', // Light theme: Default Text
+      display: 'flex', 
+      alignItems: 'center', 
+      justifyContent: 'center', 
+      minHeight: '100vh', 
+      padding: '1rem'
     }}>
-      <h1>Claiming Your Punch</h1>
-      <p>{message}</p>
-      {/* You could add a loading spinner here */}
+      <div style={{
+        maxWidth: '28rem',
+        width: '100%',
+        textAlign: 'center',
+        padding: '1.5rem',
+        backgroundColor: '#FFFFFF', // Light theme: Card Background
+        borderRadius: '1rem',
+        boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03)', // Softer shadow
+        border: '1px solid #D1D1D6' // Light theme: Border
+      }}>
+        <div style={{ marginBottom: '1rem' }}>
+          <h2 style={{
+            fontSize: '0.75rem',
+            letterSpacing: '0.1em',
+            color: '#3C3C3E', // Light theme: Secondary Text for subtitle
+            textTransform: 'uppercase',
+            fontWeight: '600',
+            marginBottom: '0.5rem'
+          }}>UFOGER Loyalty Card</h2>
+          <h1 style={{
+            fontSize: '1.875rem',
+            fontWeight: 'bold',
+            color: '#1C1C1E' // Light theme: Primary Text
+          }}>✅ {message.title}</h1>
+        </div>
+
+        <div style={{
+          backgroundColor: '#F8F8F9', // Light theme: Info Box Background (Slightly off-white)
+          color: '#3C3C3E', // Light theme: Secondary Text for info box content
+          padding: '1.25rem',
+          borderRadius: '0.75rem',
+          marginTop: '1.5rem',
+          border: '1px solid #E5E5EA' // Light border for info box
+        }}>
+          <p style={{ fontSize: '1.125rem', fontWeight: '600', color: '#1D7A2E', marginBlock: '1rem' }}>Punch successfully claimed!</p>
+          <p style={{ marginBlock: '1rem', color: '#3C3C3E' }}>{message.customer}</p>
+          <p style={{ marginBlock: '1rem', color: '#3C3C3E' }}><strong>{message.punches}</strong></p>
+          <p style={{ marginBlock: '1rem', color: '#3C3C3E' }}>{message.reward}</p>
+        </div>
+
+        <p style={{
+          fontSize: '0.875rem',
+          color: '#8E8E93', // Light theme: Placeholder/Muted Text
+          marginTop: '1.5rem',
+          animation: 'pulse 1.5s infinite'
+        }}>{message.redirecting}</p>
+      </div>
     </div>
   );
 };

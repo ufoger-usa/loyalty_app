@@ -10,7 +10,6 @@ const ClaimPunchPage = lazy(() => import('./components/ClaimPunchPage'));
 
 const CORRECT_PIN = "1234";
 
-// Define MainAppContent outside of the App component
 const MainAppContent = ({
   isAdminUnlocked,
   pinInput,
@@ -37,95 +36,253 @@ const MainAppContent = ({
   actionableQrUrl,
   setIsPunchQrModalOpen
 }) => (
-  <>
-    {feedbackMessage.text && (
-      <div className={`feedback-message ${feedbackMessage.type} ${feedbackMessage.type === 'error' ? 'feedback-error' : feedbackMessage.type === 'success' ? 'feedback-success' : 'feedback-info'}`}>
-        {feedbackMessage.text}
-      </div>
-    )}
-
+  <div style={{ maxWidth: '28rem', margin: 'auto', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
     {!isAdminUnlocked ? (
-      <div className="admin-lock compact-section">
-        <h4>Admin Access</h4>
+      <div style={{
+        backgroundColor: '#FFFFFF',
+        border: '1px solid #D1D1D6',
+        borderRadius: '1rem',
+        padding: '1.5rem',
+        display: 'flex', 
+        flexDirection: 'column', 
+        gap: '1rem', 
+        boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03)'
+      }}>
+        <h2 style={{ fontSize: '0.875rem', fontWeight: '600', color: '#1C1C1E' }}>Admin Access</h2>
         <input
           type="password"
           value={pinInput}
           onChange={handlePinInputChange}
           placeholder="Enter PIN"
-          className="pin-input compact-input"
+          style={{
+            width: '100%', 
+            padding: '0.75rem', 
+            borderRadius: '0.5rem', 
+            backgroundColor: '#FFFFFF',
+            color: '#1C1C1E',
+            border: '1px solid #D1D1D6',
+            '::placeholder': { color: '#8E8E93' }
+          }}
         />
-        <button onClick={handlePinSubmit} className="admin-button compact-button">Unlock</button>
+        <button 
+          onClick={handlePinSubmit} 
+          style={{
+            width: '100%', 
+            backgroundColor: '#E5E5EA',
+            color: '#1C1C1E',
+            fontWeight: '600', 
+            paddingBlock: '0.75rem', 
+            borderRadius: '0.5rem',
+            border: 'none'
+          }}
+        >Unlock</button>
       </div>
     ) : (
-      <div className="admin-unlocked">
-        <div className="admin-controls-header compact-header">
-          <h4>Admin Controls</h4>
-          <button onClick={handleLockAdmin} className="admin-button lock-button compact-button danger-button">Lock</button>
+      <div style={{
+        backgroundColor: '#FFFFFF',
+        border: '1px solid #D1D1D6',
+        borderRadius: '1rem',
+        padding: '1.5rem',
+        display: 'flex', 
+        flexDirection: 'column', 
+        gap: '1rem', 
+        boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03)'
+      }}>
+        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+          <h2 style={{ fontSize: '0.875rem', fontWeight: '600', color: '#1C1C1E' }}>Admin Controls</h2>
+          <button 
+            onClick={handleLockAdmin} 
+            style={{
+              backgroundColor: '#D1D1D6',
+              color: '#1C1C1E',
+              padding: '0.375rem 0.75rem', 
+              borderRadius: '0.375rem',
+              fontSize: '0.75rem',
+              border: 'none'
+            }}
+          >Lock</button>
         </div>
+        <input 
+          type="tel"
+          value={customerPhoneNumber}
+          onChange={handlePhoneNumberChange}
+          placeholder="Customer Phone (ID)" 
+          disabled={isLoadingCustomer}
+          style={{
+            width: '100%', 
+            padding: '0.75rem', 
+            borderRadius: '0.5rem', 
+            backgroundColor: '#FFFFFF',
+            color: '#1C1C1E',
+            border: '1px solid #D1D1D6',
+             '::placeholder': { color: '#8E8E93' }
+          }}
+        />
+        <input 
+          type="text" 
+          value={customerNameInput}
+          onChange={handleCustomerNameChange}
+          placeholder="Customer Name" 
+          disabled={isLoadingCustomer}
+          style={{
+            width: '100%', 
+            padding: '0.75rem', 
+            borderRadius: '0.5rem', 
+            backgroundColor: '#FFFFFF',
+            color: '#1C1C1E',
+            border: '1px solid #D1D1D6',
+             '::placeholder': { color: '#8E8E93' }
+          }}
+        />
+        <button 
+          onClick={loadCustomerData} 
+          disabled={isLoadingCustomer || (!customerPhoneNumber.trim())}
+          style={{
+            width: '100%', 
+            backgroundColor: '#E5E5EA',
+            color: '#1C1C1E',
+            fontWeight: '600', 
+            paddingBlock: '0.75rem', 
+            borderRadius: '0.5rem',
+            border: 'none'
+          }}
+        >
+          {isLoadingCustomer ? "Loading..." : "Load/Create"}
+        </button>
+      </div>
+    )}
 
-        <div className="customer-management compact-section">
-          <h5>Load/Create Customer</h5>
-          <div className="input-group compact-input-group">
-            <input
-              type="tel"
-              value={customerPhoneNumber}
-              onChange={handlePhoneNumberChange}
-              placeholder="Phone Number"
-              className="customer-input compact-input"
-              disabled={isLoadingCustomer}
-            />
-            <input
-              type="text"
-              value={customerNameInput}
-              onChange={handleCustomerNameChange}
-              placeholder="Name (Optional)"
-              className="customer-input compact-input"
-              disabled={isLoadingCustomer}
-            />
-            <button onClick={loadCustomerData} disabled={isLoadingCustomer || (!customerPhoneNumber.trim())} className="action-button compact-button">
-              {isLoadingCustomer ? "Loading..." : "Load/Create"}
-            </button>
-          </div>
+    {isAdminUnlocked && activeCustomerData && (
+      <div style={{
+        backgroundColor: '#FFFFFF',
+        border: '1px solid #D1D1D6',
+        borderRadius: '1rem',
+        padding: '1.5rem',
+        display: 'flex', 
+        flexDirection: 'column', 
+        gap: '1rem',
+        textAlign: 'center', 
+        boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03)'
+      }}>
+        <h3 style={{ color: '#1C1C1E', fontWeight: 'bold', fontSize: '1.125rem' }}>
+          {activeCustomerData.name || 'N/A'} 
+          <span style={{ fontSize: '0.875rem', color: '#3C3C3E' }}> ({activeCustomerData.id})</span>
+        </h3>
+        <PunchCard currentPunches={currentPunches} totalPunches={totalPunches} isRewardAvailable={isRewardAvailable} />
+        <p style={{ fontSize: '0.875rem', color: '#3C3C3E' }}>{currentPunches} / {totalPunches}</p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          <button 
+            onClick={addPunch} 
+            disabled={isSavingPunch || currentPunches >= totalPunches || isLoadingCustomer}
+            style={{
+              backgroundColor: '#E5E5EA',
+              color: '#1C1C1E',
+              fontWeight: '600',
+              paddingBlock: '0.75rem', 
+              borderRadius: '0.5rem',
+              border: 'none'
+            }}
+          >
+            {isSavingPunch ? "..." : "Add Punch"}
+          </button>
+          <button 
+            onClick={handleGeneratePunchQrCode} 
+            disabled={!activeCustomerData || currentPunches >= totalPunches || isLoadingCustomer}
+            style={{
+              backgroundColor: '#E5E5EA',
+              color: '#1C1C1E',
+              fontWeight: '600',
+              paddingBlock: '0.75rem', 
+              borderRadius: '0.5rem',
+              border: 'none'
+            }}
+          >
+            Generate Punch QR
+          </button>
+          <button 
+            onClick={redeemReward} 
+            disabled={isRedeemingReward || !isRewardAvailable || isLoadingCustomer}
+            style={{
+              backgroundColor: '#E5E5EA',
+              color: '#1C1C1E',
+              fontWeight: '600',
+              paddingBlock: '0.75rem', 
+              borderRadius: '0.5rem',
+              border: 'none'
+            }}
+          >
+            {isRedeemingReward ? "..." : "Redeem"}
+          </button>
         </div>
+      </div>
+    )}
 
-        {activeCustomerData && (
-          <div className="customer-info compact-section">
-            <div className="customer-details">
-              <h5>{activeCustomerData.name || "N/A"} ({activeCustomerData.id})</h5>
-              <PunchCard currentPunches={currentPunches} totalPunches={totalPunches} isRewardAvailable={isRewardAvailable} />
-            </div>
-            
-            <div className="actions-group compact-actions-group">
-              <button onClick={addPunch} disabled={isSavingPunch || currentPunches >= totalPunches || isLoadingCustomer} className="action-button compact-button">
-                {isSavingPunch ? "..." : "Add Punch"}
-              </button>
-              <button 
-                onClick={handleGeneratePunchQrCode} 
-                disabled={!activeCustomerData || currentPunches >= totalPunches || isLoadingCustomer}
-                className="action-button compact-button qr-button"
-              >
-                Generate Punch QR
-              </button>
-              <button onClick={redeemReward} disabled={isRedeemingReward || !isRewardAvailable || isLoadingCustomer} className="action-button redeem-button compact-button danger-button">
-                {isRedeemingReward ? "..." : "Redeem"}
-              </button>
-            </div>
-          </div>
-        )}
+    {feedbackMessage.text && (
+      <div style={{
+        position: 'fixed', 
+        bottom: '1.5rem', 
+        left: '50%', 
+        transform: 'translateX(-50%)',
+        padding: '0.75rem 1.25rem',
+        borderRadius: '0.5rem',
+        backgroundColor: feedbackMessage.type === 'error' ? '#FFEBEB' : feedbackMessage.type === 'success' ? '#E6F7E9' : '#E0F2FE',
+        color: feedbackMessage.type === 'error' ? '#BF2C2C' : feedbackMessage.type === 'success' ? '#1D7A2E' : '#0C5A8A',
+        boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+        zIndex: 1000,
+        fontSize: '0.875rem',
+        border: '1px solid ',
+        borderColor: feedbackMessage.type === 'error' ? '#FAD1D1' : feedbackMessage.type === 'success' ? '#C6E6CC' : '#B8DFF8'
+      }}>
+        {feedbackMessage.text}
       </div>
     )}
 
     {isPunchQrModalOpen && actionableQrUrl && (
-      <div className="modal-overlay" onClick={() => setIsPunchQrModalOpen(false)}>
-        <div className="modal-content compact-modal" onClick={(e) => e.stopPropagation()}>
-          <h4>Scan to Get Punch</h4>
+      <div 
+        style={{ 
+          position: 'fixed', 
+          top: 0, 
+          left: 0, 
+          width: '100%', 
+          height: '100%', 
+          backgroundColor: 'rgba(0,0,0,0.6)', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          zIndex: 1000 
+        }}
+        onClick={() => setIsPunchQrModalOpen(false)}
+      >
+        <div 
+          style={{ 
+            backgroundColor: '#ffffff',
+            padding: '20px',
+            borderRadius: '8px',
+            boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
+            textAlign: 'center',
+            color: '#333333'
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <h4 style={{ marginBottom: '15px', fontSize: '1.2rem', color: '#333333' }}>Scan to Get Punch</h4>
           <QRCodeDisplay value={actionableQrUrl} size={200} /> 
-          <p className="qr-url-display small-text">{actionableQrUrl}</p>
-          <button onClick={() => setIsPunchQrModalOpen(false)} className="admin-button compact-button">Close</button>
+          <p style={{ fontSize: '0.8rem', marginTop: '15px', wordBreak: 'break-all', color: '#555555' }}>{actionableQrUrl}</p>
+          <button 
+            onClick={() => setIsPunchQrModalOpen(false)} 
+            style={{
+              marginTop: '20px',
+              backgroundColor: '#007bff',
+              color: '#ffffff', 
+              padding: '10px 15px', 
+              borderRadius: '5px',
+              border: 'none',
+              cursor: 'pointer'
+            }}
+          >Close</button>
         </div>
       </div>
     )}
-  </>
+  </div>
 );
 
 function App() {
@@ -188,7 +345,18 @@ function App() {
     }
 
     const uniqueClaimToken = `PUNCH_TOKEN_${activeCustomerData.id}_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
-    const claimUrl = `https://ufoger-usa.github.io/loyalty_app/claim?token=${uniqueClaimToken}`;
+    
+    let claimUrl;
+    const isLocalPreview = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+    if (isLocalPreview) {
+      const baseUrl = window.location.origin + (import.meta.env.BASE_URL || '/'); 
+      claimUrl = `${baseUrl}claim?token=${uniqueClaimToken}`;
+      console.log("Generated local preview QR URL:", claimUrl); 
+    } else {
+      claimUrl = `https://ufoger-usa.github.io/loyalty_app/claim?token=${uniqueClaimToken}`;
+      console.log("Generated production QR URL:", claimUrl);
+    }
 
     setActionableQrUrl(claimUrl);
     setIsPunchQrModalOpen(true);
@@ -378,12 +546,32 @@ function App() {
   }, [customerPhoneNumber, customerNameInput, unsubscribeCustomerListenerRef]);
 
   return (
-    <div className="App">
-      <header className="App-header compact-app-header">
-        <h1>Loyalty Card</h1>
-      </header>
-      <main className="App-main">
-        <Suspense fallback={<div>Loading page...</div>}>
+    <div style={{
+      minHeight: '100vh', 
+      backgroundColor: '#FFFFFF',
+      color: '#1C1C1E',
+      padding: '1.5rem 1rem',
+      fontFamily: 'sans-serif'
+    }}>
+      <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+        <h2 style={{
+            fontSize: '0.75rem', 
+            letterSpacing: '0.1em', 
+            color: '#3C3C3E',
+            textTransform: 'uppercase',
+            fontWeight: '600', 
+            marginBottom: '0.25rem' 
+          }}>UFOGER Loyalty System</h2>
+        <h1 style={{ 
+            fontSize: '1.5rem',
+            fontWeight: 'bold', 
+            color: '#1C1C1E'
+          }}>Admin Panel</h1>
+      </div>
+      <main>
+        <Suspense fallback={
+          <div style={{textAlign: 'center', fontSize: '1.25rem', paddingTop: '2rem'}}>Loading page...</div>
+        }>
           <Routes>
             <Route path="/" element={
               <MainAppContent

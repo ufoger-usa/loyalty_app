@@ -1,26 +1,28 @@
 import React from 'react';
 
-function PunchCard({ totalPunches = 10, currentPunches = 0, isRewardAvailable = false }) {
+function PunchCard({ totalPunches = 10, currentPunches = 0 }) {
   const punches = [];
   for (let i = 0; i < totalPunches; i++) {
     punches.push(
-      <span key={i} className={`punch-mark ${i < currentPunches ? 'punched' : 'not-punched'}`}>
-        {/* Using simple characters for punches */}
-      </span>
+      <div
+        key={i} 
+        style={{
+          width: '1.25rem',
+          height: '1.25rem',
+          borderRadius: '50%',
+          backgroundColor: i < currentPunches ? '#32D74B' : '#E5E5EA',
+        }}
+      ></div>
     );
   }
 
   return (
-    <div className={`punch-card-container compact-punch-card ${isRewardAvailable ? 'reward-active' : ''}`}>
-      <div className="punches-display">
-        {punches}
-      </div>
-      <p className="punch-count-text">{currentPunches} / {totalPunches}</p>
-      {isRewardAvailable && (
-        <div className="reward-indicator">
-          <p>🎉 Reward Ready! 🎉</p>
-        </div>
-      )}
+    <div style={{
+      display: 'flex',
+      justifyContent: 'center',
+      gap: '0.5rem'
+    }}>
+      {punches}
     </div>
   );
 }
