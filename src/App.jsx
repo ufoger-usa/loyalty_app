@@ -36,7 +36,7 @@ const MainAppContent = ({
   actionableQrUrl,
   setIsPunchQrModalOpen
 }) => (
-  <div style={{ maxWidth: '28rem', margin: 'auto', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+  <div style={{ maxWidth: '24rem', margin: 'auto', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
     {!isAdminUnlocked ? (
       <div style={{
         backgroundColor: '#FFFFFF',
@@ -550,10 +550,10 @@ function App() {
       minHeight: '100vh', 
       backgroundColor: '#FFFFFF',
       color: '#1C1C1E',
-      padding: '1.5rem 1rem',
+      padding: '1rem 0.75rem', // Adjusted padding
       fontFamily: 'sans-serif'
     }}>
-      <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+      <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
         <h2 style={{
             fontSize: '0.75rem', 
             letterSpacing: '0.1em', 

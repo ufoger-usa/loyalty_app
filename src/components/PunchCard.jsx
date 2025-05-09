@@ -7,8 +7,8 @@ function PunchCard({ totalPunches = 10, currentPunches = 0 }) {
       <div
         key={i} 
         style={{
-          width: '1.25rem',
-          height: '1.25rem',
+          width: '1rem', // Adjusted size
+          height: '1rem', // Adjusted size
           borderRadius: '50%',
           backgroundColor: i < currentPunches ? '#32D74B' : '#E5E5EA',
         }}
@@ -20,7 +20,7 @@ function PunchCard({ totalPunches = 10, currentPunches = 0 }) {
     <div style={{
       display: 'flex',
       justifyContent: 'center',
-      gap: '0.5rem'
+      gap: '0.375rem' // Adjusted gap
     }}>
       {punches}
     </div>
