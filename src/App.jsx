@@ -61,7 +61,8 @@ const MainAppContent = ({
             backgroundColor: '#FFFFFF',
             color: '#1C1C1E',
             border: '1px solid #D1D1D6',
-            '::placeholder': { color: '#8E8E93' }
+            '::placeholder': { color: '#8E8E93' },
+            boxSizing: 'border-box' // Added for better width calculation
           }}
         />
         <button 
@@ -73,7 +74,8 @@ const MainAppContent = ({
             fontWeight: '600', 
             paddingBlock: '0.75rem', 
             borderRadius: '0.5rem',
-            border: 'none'
+            border: 'none',
+            boxSizing: 'border-box' // Added for better width calculation
           }}
         >Unlock</button>
       </div>
@@ -115,7 +117,8 @@ const MainAppContent = ({
             backgroundColor: '#FFFFFF',
             color: '#1C1C1E',
             border: '1px solid #D1D1D6',
-             '::placeholder': { color: '#8E8E93' }
+             '::placeholder': { color: '#8E8E93' },
+            boxSizing: 'border-box' // Added for better width calculation
           }}
         />
         <input 
@@ -131,7 +134,8 @@ const MainAppContent = ({
             backgroundColor: '#FFFFFF',
             color: '#1C1C1E',
             border: '1px solid #D1D1D6',
-             '::placeholder': { color: '#8E8E93' }
+             '::placeholder': { color: '#8E8E93' },
+            boxSizing: 'border-box' // Added for better width calculation
           }}
         />
         <button 
@@ -144,7 +148,8 @@ const MainAppContent = ({
             fontWeight: '600', 
             paddingBlock: '0.75rem', 
             borderRadius: '0.5rem',
-            border: 'none'
+            border: 'none',
+            boxSizing: 'border-box' // Added for better width calculation
           }}
         >
           {isLoadingCustomer ? "Loading..." : "Load/Create"}
