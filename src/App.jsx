@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, lazy, Suspense, useCallback } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import './App.css';
 import PunchCard from './components/PunchCard';
 import QRCodeDisplay from './components/QRCodeDisplay';
@@ -229,26 +229,39 @@ const MainAppContent = ({
   actionableQrUrl,
   setIsPunchQrModalOpen
 }) => {
+  const [isMobileView, setIsMobileView] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobileView(window.innerWidth < 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   if (isAdminUnlocked) {
     return (
       <>
         <div style={{
           display: 'flex',
-          flexDirection: 'row',
+          flexDirection: isMobileView ? 'column' : 'row',
           gap: '1.5rem',
           width: '100%',
-          maxWidth: '72rem',
+          maxWidth: isMobileView ? '100%' : '72rem',
           margin: '0 auto',
           boxSizing: 'border-box',
           flexGrow: 1,
           padding: '0 0.75rem 1rem 0.75rem',
-          overflow: 'hidden' 
+          overflowY: isMobileView ? 'auto' : 'hidden',
+          overflowX: 'hidden'
         }}>
           <div style={{
-            flex: '1 1 0%', // Explicit flex shorthand
-            minWidth: '18rem',
+            flex: isMobileView ? '1 1 auto' : '1 1 0%',
+            width: isMobileView ? '100%' : 'auto',
+            minWidth: isMobileView ? 'unset' : '18rem',
             display: 'flex',
-            flexDirection: 'column'
+            flexDirection: 'column',
+            marginBottom: isMobileView ? '1.5rem' : '0'
           }}>
             <AdminPanel
               handleLockAdmin={handleLockAdmin}
@@ -271,14 +284,15 @@ const MainAppContent = ({
             />
           </div>
           <div style={{
-            flex: '2 1 0%', // Explicit flex shorthand
-            minWidth: '24rem',
-            display: 'flex', 
+            flex: isMobileView ? '1 1 auto' : '2 1 0%',
+            width: isMobileView ? '100%' : 'auto',
+            minWidth: isMobileView ? 'unset' : '24rem',
+            display: 'flex',
             flexDirection: 'column',
-            overflow: 'hidden' // Crucial for parent to clip child if child overflows
+            overflow: 'hidden'
           }}>
             <Suspense fallback={<div style={{textAlign: 'center', fontSize: '1.1rem', paddingTop: '2rem'}}>Loading records...</div>}>
-              <CustomerRecords /> 
+              <CustomerRecords />
             </Suspense>
           </div>
         </div>
@@ -310,9 +324,11 @@ const MainAppContent = ({
               }}
               onClick={(e) => e.stopPropagation()}
             >
-              <h4 style={{ marginBottom: '15px', fontSize: '1.2rem', color: '#333333' }}>Scan to Get Punch</h4>
+              <h4 style={{ marginBottom: '15px', fontSize: '1.2rem', color: '#333333' }}>Scan to Punch Your Card</h4>
               <QRCodeDisplay value={actionableQrUrl} size={200} /> 
-              <p style={{ fontSize: '0.8rem', marginTop: '15px', wordBreak: 'break-all', color: '#555555' }}>{actionableQrUrl}</p>
+              <p style={{ fontSize: '1rem', marginTop: '15px', color: '#555555' }}>
+                Your loyalty punch will be added automatically.
+              </p>
               <button 
                 onClick={() => setIsPunchQrModalOpen(false)} 
                 style={{
@@ -428,6 +444,7 @@ function App() {
   const [isPunchQrModalOpen, setIsPunchQrModalOpen] = useState(false);
 
   const unsubscribeCustomerListenerRef = useRef(null);
+  const location = useLocation();
 
   useEffect(() => {
     if (activeCustomerData) {
@@ -543,7 +560,7 @@ function App() {
         {
           punches: 0,
           lastRewardRedeemedAt: serverTimestamp(),
-          totalRedemptions: currentTotalRedemptions + 1, // Increment totalRedemptions
+          totalRedemptions: currentTotalRedemptions + 1,
           updatedAt: serverTimestamp()
         },
         { merge: true }
@@ -624,7 +641,7 @@ function App() {
             lastRewardRedeemedAt: data.lastRewardRedeemedAt,
             createdAt: data.createdAt,
             updatedAt: data.updatedAt,
-            totalRedemptions: data.totalRedemptions || 0 // Load totalRedemptions
+            totalRedemptions: data.totalRedemptions || 0
           };
           setActiveCustomerData(customerData);
 
@@ -646,7 +663,7 @@ function App() {
             createdAt: serverTimestamp(),
             updatedAt: serverTimestamp(),
             lastRewardRedeemedAt: null,
-            totalRedemptions: 0 // Initialize totalRedemptions for new customer
+            totalRedemptions: 0
           };
           await setDoc(customerRef, newCustomerData);
           showFeedback(`New customer ${nameToSave || customerId} created.`, "success");
@@ -682,25 +699,27 @@ function App() {
       fontFamily: 'sans-serif',
       boxSizing: 'border-box'
     }}>
-      <div style={{
-        textAlign: 'center',
-        padding: '1rem 0.75rem',
-        flexShrink: 0
-      }}>
-        <h2 style={{
-            fontSize: '0.75rem', 
-            letterSpacing: '0.1em', 
-            color: '#3C3C3E',
-            textTransform: 'uppercase',
-            fontWeight: '600', 
-            marginBottom: '0.25rem' 
-          }}>UFOGER Loyalty System</h2>
-        <h1 style={{ 
-            fontSize: '1.5rem',
-            fontWeight: 'bold', 
-            color: '#1C1C1E'
-          }}>Admin Panel</h1>
-      </div>
+      {location.pathname !== '/claim' && (
+        <div style={{
+          textAlign: 'center',
+          padding: '1rem 0.75rem',
+          flexShrink: 0
+        }}>
+          <h2 style={{
+              fontSize: '0.75rem', 
+              letterSpacing: '0.1em', 
+              color: '#3C3C3E',
+              textTransform: 'uppercase',
+              fontWeight: '600', 
+              marginBottom: '0.25rem' 
+            }}>UFOGER Loyalty System</h2>
+          <h1 style={{ 
+              fontSize: '1.5rem',
+              fontWeight: 'bold', 
+              color: '#1C1C1E'
+            }}>Admin Panel</h1>
+        </div>
+      )}
       <main style={{
         width: '100%',
         boxSizing: 'border-box',
