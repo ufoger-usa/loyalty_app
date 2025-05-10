@@ -1,6 +1,6 @@
 // filepath: g:\\UFOGER.com\\Loyalty Programs\\src\\components\\ClaimPunchPage.jsx
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { db } from '../firebaseConfig';
 import { doc, getDoc, setDoc, serverTimestamp, runTransaction } from 'firebase/firestore';
@@ -10,14 +10,23 @@ const ClaimPunchPage = () => {
   const navigate = useNavigate();
   const [message, setMessage] = useState('Processing your punch...');
   const [error, setError] = useState('');
+  const processingAttemptedRef = useRef(false); // Use a ref
 
   useEffect(() => {
     const token = searchParams.get('token');
     if (!token) {
       setError('No token provided.');
       setMessage('');
+      processingAttemptedRef.current = false; // Reset if token disappears or is invalid initially
       return;
     }
+
+    // If processing has already been attempted for this token on this page instance
+    if (processingAttemptedRef.current) {
+      return;
+    }
+    // Mark that we are now attempting to process this token.
+    processingAttemptedRef.current = true;
 
     const processPunchClaim = async () => {
       try {

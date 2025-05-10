@@ -7,14 +7,11 @@ import { db } from './firebaseConfig';
 import { doc, getDoc, setDoc, onSnapshot, serverTimestamp } from "firebase/firestore";
 
 const ClaimPunchPage = lazy(() => import('./components/ClaimPunchPage'));
+const CustomerRecords = lazy(() => import('./components/CustomerRecords'));
 
 const CORRECT_PIN = "1234";
 
-const MainAppContent = ({
-  isAdminUnlocked,
-  pinInput,
-  handlePinInputChange,
-  handlePinSubmit,
+const AdminPanel = ({
   handleLockAdmin,
   customerPhoneNumber,
   handlePhoneNumberChange,
@@ -31,133 +28,95 @@ const MainAppContent = ({
   handleGeneratePunchQrCode,
   redeemReward,
   isRedeemingReward,
-  feedbackMessage,
-  isPunchQrModalOpen,
-  actionableQrUrl,
-  setIsPunchQrModalOpen
+  feedbackMessage
 }) => (
-  <div style={{ maxWidth: '24rem', margin: 'auto', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-    {!isAdminUnlocked ? (
-      <div style={{
-        backgroundColor: '#FFFFFF',
-        border: '1px solid #D1D1D6',
-        borderRadius: '1rem',
-        padding: '1.5rem',
-        display: 'flex', 
-        flexDirection: 'column', 
-        gap: '1rem', 
-        boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03)'
-      }}>
-        <h2 style={{ fontSize: '0.875rem', fontWeight: '600', color: '#1C1C1E' }}>Admin Access</h2>
-        <input
-          type="password"
-          value={pinInput}
-          onChange={handlePinInputChange}
-          placeholder="Enter PIN"
-          style={{
-            width: '100%', 
-            padding: '0.75rem', 
-            borderRadius: '0.5rem', 
-            backgroundColor: '#FFFFFF',
-            color: '#1C1C1E',
-            border: '1px solid #D1D1D6',
-            '::placeholder': { color: '#8E8E93' },
-            boxSizing: 'border-box' // Added for better width calculation
-          }}
-        />
+  <div style={{
+    width: '100%',
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '1.25rem',
+    boxSizing: 'border-box',
+    overflowY: 'auto',
+    padding: '0.1rem',
+  }}>
+    <div style={{
+      backgroundColor: '#FFFFFF',
+      border: '1px solid #D1D1D6',
+      borderRadius: '1rem',
+      padding: '1.5rem',
+      display: 'flex', 
+      flexDirection: 'column', 
+      gap: '1rem', 
+      boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03)'
+    }}>
+      <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+        <h2 style={{ fontSize: '0.875rem', fontWeight: '600', color: '#1C1C1E' }}>Admin Controls</h2>
         <button 
-          onClick={handlePinSubmit} 
+          onClick={handleLockAdmin} 
           style={{
-            width: '100%', 
-            backgroundColor: '#E5E5EA',
+            backgroundColor: '#D1D1D6',
             color: '#1C1C1E',
-            fontWeight: '600', 
-            paddingBlock: '0.75rem', 
-            borderRadius: '0.5rem',
-            border: 'none',
-            boxSizing: 'border-box' // Added for better width calculation
+            padding: '0.375rem 0.75rem', 
+            borderRadius: '0.375rem',
+            fontSize: '0.75rem',
+            border: 'none'
           }}
-        >Unlock</button>
+        >Lock</button>
       </div>
-    ) : (
-      <div style={{
-        backgroundColor: '#FFFFFF',
-        border: '1px solid #D1D1D6',
-        borderRadius: '1rem',
-        padding: '1.5rem',
-        display: 'flex', 
-        flexDirection: 'column', 
-        gap: '1rem', 
-        boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03)'
-      }}>
-        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-          <h2 style={{ fontSize: '0.875rem', fontWeight: '600', color: '#1C1C1E' }}>Admin Controls</h2>
-          <button 
-            onClick={handleLockAdmin} 
-            style={{
-              backgroundColor: '#D1D1D6',
-              color: '#1C1C1E',
-              padding: '0.375rem 0.75rem', 
-              borderRadius: '0.375rem',
-              fontSize: '0.75rem',
-              border: 'none'
-            }}
-          >Lock</button>
-        </div>
-        <input 
-          type="tel"
-          value={customerPhoneNumber}
-          onChange={handlePhoneNumberChange}
-          placeholder="Customer Phone (ID)" 
-          disabled={isLoadingCustomer}
-          style={{
-            width: '100%', 
-            padding: '0.75rem', 
-            borderRadius: '0.5rem', 
-            backgroundColor: '#FFFFFF',
-            color: '#1C1C1E',
-            border: '1px solid #D1D1D6',
-             '::placeholder': { color: '#8E8E93' },
-            boxSizing: 'border-box' // Added for better width calculation
-          }}
-        />
-        <input 
-          type="text" 
-          value={customerNameInput}
-          onChange={handleCustomerNameChange}
-          placeholder="Customer Name" 
-          disabled={isLoadingCustomer}
-          style={{
-            width: '100%', 
-            padding: '0.75rem', 
-            borderRadius: '0.5rem', 
-            backgroundColor: '#FFFFFF',
-            color: '#1C1C1E',
-            border: '1px solid #D1D1D6',
-             '::placeholder': { color: '#8E8E93' },
-            boxSizing: 'border-box' // Added for better width calculation
-          }}
-        />
-        <button 
-          onClick={loadCustomerData} 
-          disabled={isLoadingCustomer || (!customerPhoneNumber.trim())}
-          style={{
-            width: '100%', 
-            backgroundColor: '#E5E5EA',
-            color: '#1C1C1E',
-            fontWeight: '600', 
-            paddingBlock: '0.75rem', 
-            borderRadius: '0.5rem',
-            border: 'none',
-            boxSizing: 'border-box' // Added for better width calculation
-          }}
-        >
-          {isLoadingCustomer ? "Loading..." : "Load/Create"}
-        </button>
-      </div>
-    )}
+      <input 
+        type="tel"
+        value={customerPhoneNumber}
+        onChange={handlePhoneNumberChange}
+        placeholder="Customer Phone (ID)" 
+        disabled={isLoadingCustomer}
+        style={{
+          width: '100%', 
+          padding: '0.75rem', 
+          borderRadius: '0.5rem', 
+          backgroundColor: '#FFFFFF',
+          color: '#1C1C1E',
+          border: '1px solid #D1D1D6',
+          '::placeholder': { color: '#8E8E93' },
+          boxSizing: 'border-box'
+        }}
+      />
+      <input 
+        type="text" 
+        value={customerNameInput}
+        onChange={handleCustomerNameChange}
+        placeholder="Customer Name" 
+        disabled={isLoadingCustomer}
+        style={{
+          width: '100%', 
+          padding: '0.75rem', 
+          borderRadius: '0.5rem', 
+          backgroundColor: '#FFFFFF',
+          color: '#1C1C1E',
+          border: '1px solid #D1D1D6',
+          '::placeholder': { color: '#8E8E93' },
+          boxSizing: 'border-box'
+        }}
+      />
+      <button 
+        onClick={loadCustomerData} 
+        disabled={isLoadingCustomer || (!customerPhoneNumber.trim())}
+        style={{
+          width: '100%', 
+          backgroundColor: '#E5E5EA',
+          color: '#1C1C1E',
+          fontWeight: '600', 
+          paddingBlock: '0.75rem', 
+          borderRadius: '0.5rem',
+          border: 'none',
+          boxSizing: 'border-box'
+        }}
+      >
+        {isLoadingCustomer ? "Loading..." : "Load/Create"}
+      </button>
+    </div>
 
-    {isAdminUnlocked && activeCustomerData && (
+    {activeCustomerData && (
       <div style={{
         backgroundColor: '#FFFFFF',
         border: '1px solid #D1D1D6',
@@ -241,54 +200,213 @@ const MainAppContent = ({
         {feedbackMessage.text}
       </div>
     )}
-
-    {isPunchQrModalOpen && actionableQrUrl && (
-      <div 
-        style={{ 
-          position: 'fixed', 
-          top: 0, 
-          left: 0, 
-          width: '100%', 
-          height: '100%', 
-          backgroundColor: 'rgba(0,0,0,0.6)', 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center', 
-          zIndex: 1000 
-        }}
-        onClick={() => setIsPunchQrModalOpen(false)}
-      >
-        <div 
-          style={{ 
-            backgroundColor: '#ffffff',
-            padding: '20px',
-            borderRadius: '8px',
-            boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
-            textAlign: 'center',
-            color: '#333333'
-          }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <h4 style={{ marginBottom: '15px', fontSize: '1.2rem', color: '#333333' }}>Scan to Get Punch</h4>
-          <QRCodeDisplay value={actionableQrUrl} size={200} /> 
-          <p style={{ fontSize: '0.8rem', marginTop: '15px', wordBreak: 'break-all', color: '#555555' }}>{actionableQrUrl}</p>
-          <button 
-            onClick={() => setIsPunchQrModalOpen(false)} 
-            style={{
-              marginTop: '20px',
-              backgroundColor: '#007bff',
-              color: '#ffffff', 
-              padding: '10px 15px', 
-              borderRadius: '5px',
-              border: 'none',
-              cursor: 'pointer'
-            }}
-          >Close</button>
-        </div>
-      </div>
-    )}
   </div>
 );
+
+const MainAppContent = ({
+  isAdminUnlocked,
+  pinInput,
+  handlePinInputChange,
+  handlePinSubmit,
+  handleLockAdmin,
+  customerPhoneNumber,
+  handlePhoneNumberChange,
+  customerNameInput,
+  handleCustomerNameChange,
+  loadCustomerData,
+  isLoadingCustomer,
+  activeCustomerData,
+  currentPunches,
+  totalPunches,
+  isRewardAvailable,
+  addPunch,
+  isSavingPunch,
+  handleGeneratePunchQrCode,
+  redeemReward,
+  isRedeemingReward,
+  feedbackMessage,
+  isPunchQrModalOpen,
+  actionableQrUrl,
+  setIsPunchQrModalOpen
+}) => {
+  if (isAdminUnlocked) {
+    return (
+      <>
+        <div style={{
+          display: 'flex',
+          flexDirection: 'row',
+          gap: '1.5rem',
+          width: '100%',
+          maxWidth: '72rem',
+          margin: '0 auto',
+          boxSizing: 'border-box',
+          flexGrow: 1,
+          padding: '0 0.75rem 1rem 0.75rem',
+          overflow: 'hidden' 
+        }}>
+          <div style={{
+            flex: '1 1 0%', // Explicit flex shorthand
+            minWidth: '18rem',
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
+            <AdminPanel
+              handleLockAdmin={handleLockAdmin}
+              customerPhoneNumber={customerPhoneNumber}
+              handlePhoneNumberChange={handlePhoneNumberChange}
+              customerNameInput={customerNameInput}
+              handleCustomerNameChange={handleCustomerNameChange}
+              loadCustomerData={loadCustomerData}
+              isLoadingCustomer={isLoadingCustomer}
+              activeCustomerData={activeCustomerData}
+              currentPunches={currentPunches}
+              totalPunches={totalPunches}
+              isRewardAvailable={isRewardAvailable}
+              addPunch={addPunch}
+              isSavingPunch={isSavingPunch}
+              handleGeneratePunchQrCode={handleGeneratePunchQrCode}
+              redeemReward={redeemReward}
+              isRedeemingReward={isRedeemingReward}
+              feedbackMessage={feedbackMessage}
+            />
+          </div>
+          <div style={{
+            flex: '2 1 0%', // Explicit flex shorthand
+            minWidth: '24rem',
+            display: 'flex', 
+            flexDirection: 'column',
+            overflow: 'hidden' // Crucial for parent to clip child if child overflows
+          }}>
+            <Suspense fallback={<div style={{textAlign: 'center', fontSize: '1.1rem', paddingTop: '2rem'}}>Loading records...</div>}>
+              <CustomerRecords /> 
+            </Suspense>
+          </div>
+        </div>
+
+        {isPunchQrModalOpen && actionableQrUrl && (
+          <div 
+            style={{ 
+              position: 'fixed', 
+              top: 0, 
+              left: 0, 
+              width: '100%', 
+              height: '100%', 
+              backgroundColor: 'rgba(0,0,0,0.6)', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              zIndex: 1000 
+            }}
+            onClick={() => setIsPunchQrModalOpen(false)}
+          >
+            <div 
+              style={{ 
+                backgroundColor: '#ffffff',
+                padding: '20px',
+                borderRadius: '8px',
+                boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
+                textAlign: 'center',
+                color: '#333333'
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h4 style={{ marginBottom: '15px', fontSize: '1.2rem', color: '#333333' }}>Scan to Get Punch</h4>
+              <QRCodeDisplay value={actionableQrUrl} size={200} /> 
+              <p style={{ fontSize: '0.8rem', marginTop: '15px', wordBreak: 'break-all', color: '#555555' }}>{actionableQrUrl}</p>
+              <button 
+                onClick={() => setIsPunchQrModalOpen(false)} 
+                style={{
+                  marginTop: '20px',
+                  backgroundColor: '#007bff',
+                  color: '#ffffff', 
+                  padding: '10px 15px', 
+                  borderRadius: '5px',
+                  border: 'none',
+                  cursor: 'pointer'
+                }}
+              >Close</button>
+            </div>
+          </div>
+        )}
+      </>
+    );
+  }
+
+  return (
+    <div style={{
+      flexGrow: 1,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '1rem 0.75rem',
+      boxSizing: 'border-box'
+    }}>
+      <div style={{
+        maxWidth: '24rem',
+        width: '100%',
+        backgroundColor: '#FFFFFF',
+        border: '1px solid #D1D1D6',
+        borderRadius: '1rem',
+        padding: '1.5rem',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '1rem',
+        boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03)'
+      }}>
+        <h2 style={{ fontSize: '0.875rem', fontWeight: '600', color: '#1C1C1E' }}>Admin Access</h2>
+        <input
+          type="password"
+          value={pinInput}
+          onChange={handlePinInputChange}
+          placeholder="Enter PIN"
+          style={{
+            width: '100%', 
+            padding: '0.75rem', 
+            borderRadius: '0.5rem', 
+            backgroundColor: '#FFFFFF',
+            color: '#1C1C1E',
+            border: '1px solid #D1D1D6',
+            '::placeholder': { color: '#8E8E93' },
+            boxSizing: 'border-box'
+          }}
+        />
+        <button 
+          onClick={handlePinSubmit} 
+          style={{
+            width: '100%', 
+            backgroundColor: '#E5E5EA',
+            color: '#1C1C1E',
+            fontWeight: '600', 
+            paddingBlock: '0.75rem', 
+            borderRadius: '0.5rem',
+            border: 'none',
+            boxSizing: 'border-box'
+          }}
+        >Unlock</button>
+      </div>
+
+      {feedbackMessage.text && (
+        <div style={{
+          position: 'fixed', 
+          bottom: '1.5rem', 
+          left: '50%', 
+          transform: 'translateX(-50%)',
+          padding: '0.75rem 1.25rem',
+          borderRadius: '0.5rem',
+          backgroundColor: feedbackMessage.type === 'error' ? '#FFEBEB' : feedbackMessage.type === 'success' ? '#E6F7E9' : '#E0F2FE',
+          color: feedbackMessage.type === 'error' ? '#BF2C2C' : feedbackMessage.type === 'success' ? '#1D7A2E' : '#0C5A8A',
+          boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+          zIndex: 1000,
+          fontSize: '0.875rem',
+          border: '1px solid ',
+          borderColor: feedbackMessage.type === 'error' ? '#FAD1D1' : feedbackMessage.type === 'success' ? '#C6E6CC' : '#B8DFF8'
+        }}>
+          {feedbackMessage.text}
+        </div>
+      )}
+    </div>
+  );
+};
 
 function App() {
   const [currentPunches, setCurrentPunches] = useState(0);
@@ -417,6 +535,7 @@ function App() {
     setIsRedeemingReward(true);
     setFeedbackMessage({ text: "", type: "" });
     const customerNameFromData = activeCustomerData.name || "Customer";
+    const currentTotalRedemptions = activeCustomerData.totalRedemptions || 0;
 
     try {
       const customerRef = doc(db, "customers", activeCustomerData.id);
@@ -424,6 +543,7 @@ function App() {
         {
           punches: 0,
           lastRewardRedeemedAt: serverTimestamp(),
+          totalRedemptions: currentTotalRedemptions + 1, // Increment totalRedemptions
           updatedAt: serverTimestamp()
         },
         { merge: true }
@@ -503,7 +623,8 @@ function App() {
             name: data.name || "",
             lastRewardRedeemedAt: data.lastRewardRedeemedAt,
             createdAt: data.createdAt,
-            updatedAt: data.updatedAt
+            updatedAt: data.updatedAt,
+            totalRedemptions: data.totalRedemptions || 0 // Load totalRedemptions
           };
           setActiveCustomerData(customerData);
 
@@ -524,7 +645,8 @@ function App() {
             name: nameToSave,
             createdAt: serverTimestamp(),
             updatedAt: serverTimestamp(),
-            lastRewardRedeemedAt: null
+            lastRewardRedeemedAt: null,
+            totalRedemptions: 0 // Initialize totalRedemptions for new customer
           };
           await setDoc(customerRef, newCustomerData);
           showFeedback(`New customer ${nameToSave || customerId} created.`, "success");
@@ -552,13 +674,19 @@ function App() {
 
   return (
     <div style={{
-      minHeight: '100vh', 
+      display: 'flex',
+      flexDirection: 'column',
+      minHeight: '100vh',
       backgroundColor: '#FFFFFF',
       color: '#1C1C1E',
-      padding: '1rem 0.75rem', // Adjusted padding
-      fontFamily: 'sans-serif'
+      fontFamily: 'sans-serif',
+      boxSizing: 'border-box'
     }}>
-      <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
+      <div style={{
+        textAlign: 'center',
+        padding: '1rem 0.75rem',
+        flexShrink: 0
+      }}>
         <h2 style={{
             fontSize: '0.75rem', 
             letterSpacing: '0.1em', 
@@ -573,7 +701,14 @@ function App() {
             color: '#1C1C1E'
           }}>Admin Panel</h1>
       </div>
-      <main>
+      <main style={{
+        width: '100%',
+        boxSizing: 'border-box',
+        flexGrow: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden'
+      }}>
         <Suspense fallback={
           <div style={{textAlign: 'center', fontSize: '1.25rem', paddingTop: '2rem'}}>Loading page...</div>
         }>

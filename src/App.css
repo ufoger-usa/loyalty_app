@@ -24,12 +24,12 @@ body {
 }
 
 .App {
-  text-align: center;
-  max-width: 500px; /* Max width for better focus on content */
+  /* text-align: center; */ /* Commented out, usually not needed for main app container */
+  /* max-width: 500px; */ /* Commented out, this was likely constraining the layout */
   margin: 0 auto;
-  background-color: #fff;
+  background-color: #fff; /* This will be the background for the content area if App.jsx root div doesn't override */
   min-height: 100vh;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  /* box-shadow: 0 0 10px rgba(0,0,0,0.1); */ /* Optional: comment out if a full-page app doesn't need a central shadow */
 }
 
 .App-header.compact-app-header {
