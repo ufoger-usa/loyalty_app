@@ -7,7 +7,7 @@ node_modules/
 !.env.example
 
 # Build output (if not 'docs' for GH Pages)
-# dist/
+dist/
 # build/
 
 # IDE specific
