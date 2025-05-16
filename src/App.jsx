@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, lazy, Suspense, useCallback } from 'react';
-import { Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import './App.css';
 import PunchCard from './components/PunchCard';
 import QRCodeDisplay from './components/QRCodeDisplay';
@@ -469,7 +469,6 @@ function App() {
   const [isPunchQrModalOpen, setIsPunchQrModalOpen] = useState(false);
 
   const unsubscribeCustomerListenerRef = useRef(null);
-  const location = useLocation();
 
   useEffect(() => {
     if (activeCustomerData) {
@@ -714,9 +713,11 @@ function App() {
     }
   }, [customerPhoneNumber, customerNameInput, unsubscribeCustomerListenerRef]);
 
+  const hash = window.location.hash.replace(/^#\/?/, '/');
+
   return (
     <>
-      {location.pathname === '/' && (
+      {hash === '/' && (
         <div style={{
           display: 'flex',
           flexDirection: 'column',
@@ -790,14 +791,14 @@ function App() {
           </main>
         </div>
       )}
-      {location.pathname === '/claim' && (
+      {hash === '/claim' && (
         <div style={{ minHeight: '100vh', backgroundColor: '#fff' }}>
           <Suspense fallback={<div style={{textAlign: 'center', fontSize: '1.25rem', paddingTop: '2rem'}}>Loading page...</div>}>
             <ClaimPunchPage />
           </Suspense>
         </div>
       )}
-      {location.pathname === '/customer' && (
+      {hash === '/customer' && (
         <div style={{ minHeight: '100vh', backgroundColor: '#fff' }}>
           <Suspense fallback={<div style={{textAlign: 'center', fontSize: '1.25rem', paddingTop: '2rem'}}>Loading page...</div>}>
             <CustomerPage />
