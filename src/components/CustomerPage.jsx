@@ -11,6 +11,11 @@ const BUSINESS_INFO = {
 const TOTAL_PUNCHES = 10;
 
 function CustomerPage() {
+  // DEBUG: CustomerPage loaded
+  useEffect(() => {
+    console.log("[DEBUG] CustomerPage component rendered");
+  }, []);
+
   const [step, setStep] = useState('form');
   const [phone, setPhone] = useState('');
   const [name, setName] = useState('');
