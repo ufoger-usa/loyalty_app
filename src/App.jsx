@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, lazy, Suspense, useCallback } from 'react';
-import { Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import './App.css';
 import PunchCard from './components/PunchCard';
 import QRCodeDisplay from './components/QRCodeDisplay';
@@ -470,8 +470,6 @@ function App() {
 
   const unsubscribeCustomerListenerRef = useRef(null);
 
-  const location = useLocation();
-
   useEffect(() => {
     if (activeCustomerData) {
       setCurrentPunches(activeCustomerData.punches);
@@ -716,97 +714,78 @@ function App() {
   }, [customerPhoneNumber, customerNameInput, unsubscribeCustomerListenerRef]);
 
   return (
-    <>
-      {location.pathname === '/' && (
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          minHeight: '100vh',
-          backgroundColor: '#FFFFFF',
-          color: '#1C1C1E',
-          fontFamily: 'sans-serif',
-          boxSizing: 'border-box'
-        }}>
+    <Suspense fallback={<div style={{textAlign: 'center', fontSize: '1.25rem', paddingTop: '2rem'}}>Loading page...</div>}>
+      <Routes>
+        <Route path="/" element={
           <div style={{
-            textAlign: 'center',
-            padding: '1rem 0.75rem',
-            flexShrink: 0
-          }}>
-            <h2 style={{
-                fontSize: '0.75rem', 
-                letterSpacing: '0.1em', 
-                color: '#3C3C3E',
-                textTransform: 'uppercase',
-                fontWeight: '600', 
-                marginBottom: '0.25rem' 
-              }}>UFOGER Loyalty System</h2>
-            <h1 style={{ 
-                fontSize: '1.5rem',
-                fontWeight: 'bold', 
-                color: '#1C1C1E'
-              }}>Admin Panel</h1>
-          </div>
-          <main style={{
-            width: '100%',
-            boxSizing: 'border-box',
-            flexGrow: 1,
             display: 'flex',
             flexDirection: 'column',
-            overflow: 'hidden'
+            minHeight: '100vh',
+            backgroundColor: '#FFFFFF',
+            color: '#1C1C1E',
+            fontFamily: 'sans-serif',
+            boxSizing: 'border-box'
           }}>
-            <Suspense fallback={
-              <div style={{textAlign: 'center', fontSize: '1.25rem', paddingTop: '2rem'}}>Loading page...</div>
-            }>
-              <Routes>
-                <Route path="/" element={
-                  <MainAppContent
-                    isAdminUnlocked={isAdminUnlocked}
-                    pinInput={pinInput}
-                    handlePinInputChange={handlePinInputChange}
-                    handlePinSubmit={handlePinSubmit}
-                    handleLockAdmin={handleLockAdmin}
-                    customerPhoneNumber={customerPhoneNumber}
-                    handlePhoneNumberChange={handlePhoneNumberChange}
-                    customerNameInput={customerNameInput}
-                    handleCustomerNameChange={handleCustomerNameChange}
-                    loadCustomerData={loadCustomerData}
-                    isLoadingCustomer={isLoadingCustomer}
-                    activeCustomerData={activeCustomerData}
-                    currentPunches={currentPunches}
-                    totalPunches={totalPunches}
-                    isRewardAvailable={isRewardAvailable}
-                    addPunch={addPunch}
-                    isSavingPunch={isSavingPunch}
-                    handleGeneratePunchQrCode={handleGeneratePunchQrCode}
-                    redeemReward={redeemReward}
-                    isRedeemingReward={isRedeemingReward}
-                    feedbackMessage={feedbackMessage}
-                    isPunchQrModalOpen={isPunchQrModalOpen}
-                    actionableQrUrl={actionableQrUrl}
-                    setIsPunchQrModalOpen={setIsPunchQrModalOpen}
-                  />
-                } />
-              </Routes>
-            </Suspense>
-          </main>
-        </div>
-      )}
-      {location.pathname === '/claim' && (
-        <div style={{ minHeight: '100vh', backgroundColor: '#fff' }}>
-          <Suspense fallback={<div style={{textAlign: 'center', fontSize: '1.25rem', paddingTop: '2rem'}}>Loading page...</div>}>
-            <ClaimPunchPage />
-          </Suspense>
-        </div>
-      )}
-      {location.pathname === '/customer' && (
-        <div style={{ minHeight: '100vh', backgroundColor: '#fff', textAlign: 'center', color: 'red' }}>
-          <div style={{fontSize: '12px', margin: '8px 0'}}>DEBUG: Detected pathname: {location.pathname}</div>
-          <Suspense fallback={<div style={{textAlign: 'center', fontSize: '1.25rem', paddingTop: '2rem'}}>Loading page...</div>}>
-            <CustomerPage />
-          </Suspense>
-        </div>
-      )}
-    </>
+            <div style={{
+              textAlign: 'center',
+              padding: '1rem 0.75rem',
+              flexShrink: 0
+            }}>
+              <h2 style={{
+                  fontSize: '0.75rem', 
+                  letterSpacing: '0.1em', 
+                  color: '#3C3C3E',
+                  textTransform: 'uppercase',
+                  fontWeight: '600', 
+                  marginBottom: '0.25rem' 
+                }}>UFOGER Loyalty System</h2>
+              <h1 style={{ 
+                  fontSize: '1.5rem',
+                  fontWeight: 'bold', 
+                  color: '#1C1C1E'
+                }}>Admin Panel</h1>
+            </div>
+            <main style={{
+              width: '100%',
+              boxSizing: 'border-box',
+              flexGrow: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden'
+            }}>
+              <MainAppContent
+                isAdminUnlocked={isAdminUnlocked}
+                pinInput={pinInput}
+                handlePinInputChange={handlePinInputChange}
+                handlePinSubmit={handlePinSubmit}
+                handleLockAdmin={handleLockAdmin}
+                customerPhoneNumber={customerPhoneNumber}
+                handlePhoneNumberChange={handlePhoneNumberChange}
+                customerNameInput={customerNameInput}
+                handleCustomerNameChange={handleCustomerNameChange}
+                loadCustomerData={loadCustomerData}
+                isLoadingCustomer={isLoadingCustomer}
+                activeCustomerData={activeCustomerData}
+                currentPunches={currentPunches}
+                totalPunches={totalPunches}
+                isRewardAvailable={isRewardAvailable}
+                addPunch={addPunch}
+                isSavingPunch={isSavingPunch}
+                handleGeneratePunchQrCode={handleGeneratePunchQrCode}
+                redeemReward={redeemReward}
+                isRedeemingReward={isRedeemingReward}
+                feedbackMessage={feedbackMessage}
+                isPunchQrModalOpen={isPunchQrModalOpen}
+                actionableQrUrl={actionableQrUrl}
+                setIsPunchQrModalOpen={setIsPunchQrModalOpen}
+              />
+            </main>
+          </div>
+        } />
+        <Route path="/customer" element={<CustomerPage />} />
+        <Route path="/claim" element={<ClaimPunchPage />} />
+      </Routes>
+    </Suspense>
   );
 }
 
