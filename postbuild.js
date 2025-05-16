@@ -1,13 +1,13 @@
 import fs from 'fs-extra';
 import path from 'path';
 
-const buildDir = path.resolve(process.cwd(), 'docs');
+const buildDir = path.resolve(process.cwd(), 'dist');
 const indexHtmlPath = path.join(buildDir, 'index.html');
 const _404HtmlPath = path.join(buildDir, '404.html');
 
 async function setupSpaRedirect() {
   try {
-    // Ensure the docs directory exists (it should after build)
+    // Ensure the dist directory exists (it should after build)
     await fs.ensureDir(buildDir);
 
     // Check if index.html exists
