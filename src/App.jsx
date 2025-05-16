@@ -782,8 +782,8 @@ function App() {
             </main>
           </div>
         } />
-        <Route path="/customer" element={<CustomerPage />} />
-        <Route path="/claim" element={<ClaimPunchPage />} />
+        <Route path="customer" element={<CustomerPage />} />
+        <Route path="claim" element={<ClaimPunchPage />} />
       </Routes>
     </Suspense>
   );
