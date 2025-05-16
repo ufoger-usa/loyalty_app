@@ -758,33 +758,35 @@ function App() {
         }>
           <Routes>
             <Route path="/" element={
-              <MainAppContent
-                isAdminUnlocked={isAdminUnlocked}
-                pinInput={pinInput}
-                handlePinInputChange={handlePinInputChange}
-                handlePinSubmit={handlePinSubmit}
-                handleLockAdmin={handleLockAdmin}
-                customerPhoneNumber={customerPhoneNumber}
-                handlePhoneNumberChange={handlePhoneNumberChange}
-                customerNameInput={customerNameInput}
-                handleCustomerNameChange={handleCustomerNameChange}
-                loadCustomerData={loadCustomerData}
-                isLoadingCustomer={isLoadingCustomer}
-                activeCustomerData={activeCustomerData}
-                currentPunches={currentPunches}
-                totalPunches={totalPunches}
-                isRewardAvailable={isRewardAvailable}
-                addPunch={addPunch}
-                isSavingPunch={isSavingPunch}
-                handleGeneratePunchQrCode={handleGeneratePunchQrCode}
-                redeemReward={redeemReward}
-                isRedeemingReward={isRedeemingReward}
-                feedbackMessage={feedbackMessage}
-                isPunchQrModalOpen={isPunchQrModalOpen}
-                actionableQrUrl={actionableQrUrl}
-                setIsPunchQrModalOpen={setIsPunchQrModalOpen}
-              />} 
-            />
+              location.pathname === '/' ? (
+                <MainAppContent
+                  isAdminUnlocked={isAdminUnlocked}
+                  pinInput={pinInput}
+                  handlePinInputChange={handlePinInputChange}
+                  handlePinSubmit={handlePinSubmit}
+                  handleLockAdmin={handleLockAdmin}
+                  customerPhoneNumber={customerPhoneNumber}
+                  handlePhoneNumberChange={handlePhoneNumberChange}
+                  customerNameInput={customerNameInput}
+                  handleCustomerNameChange={handleCustomerNameChange}
+                  loadCustomerData={loadCustomerData}
+                  isLoadingCustomer={isLoadingCustomer}
+                  activeCustomerData={activeCustomerData}
+                  currentPunches={currentPunches}
+                  totalPunches={totalPunches}
+                  isRewardAvailable={isRewardAvailable}
+                  addPunch={addPunch}
+                  isSavingPunch={isSavingPunch}
+                  handleGeneratePunchQrCode={handleGeneratePunchQrCode}
+                  redeemReward={redeemReward}
+                  isRedeemingReward={isRedeemingReward}
+                  feedbackMessage={feedbackMessage}
+                  isPunchQrModalOpen={isPunchQrModalOpen}
+                  actionableQrUrl={actionableQrUrl}
+                  setIsPunchQrModalOpen={setIsPunchQrModalOpen}
+                />
+              ) : null
+            } />
             <Route path="/claim" element={<ClaimPunchPage />} />
             <Route path="/customer" element={<CustomerPage />} />
           </Routes>
