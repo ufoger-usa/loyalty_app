@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, lazy, Suspense, useCallback } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import './App.css';
 import PunchCard from './components/PunchCard';
 import QRCodeDisplay from './components/QRCodeDisplay';
@@ -470,6 +470,8 @@ function App() {
 
   const unsubscribeCustomerListenerRef = useRef(null);
 
+  const location = useLocation();
+
   useEffect(() => {
     if (activeCustomerData) {
       setCurrentPunches(activeCustomerData.punches);
@@ -713,11 +715,9 @@ function App() {
     }
   }, [customerPhoneNumber, customerNameInput, unsubscribeCustomerListenerRef]);
 
-  const hash = window.location.hash.replace(/^#\/?/, '/');
-
   return (
     <>
-      {hash === '/' && (
+      {location.pathname === '/' && (
         <div style={{
           display: 'flex',
           flexDirection: 'column',
@@ -791,15 +791,16 @@ function App() {
           </main>
         </div>
       )}
-      {hash === '/claim' && (
+      {location.pathname === '/claim' && (
         <div style={{ minHeight: '100vh', backgroundColor: '#fff' }}>
           <Suspense fallback={<div style={{textAlign: 'center', fontSize: '1.25rem', paddingTop: '2rem'}}>Loading page...</div>}>
             <ClaimPunchPage />
           </Suspense>
         </div>
       )}
-      {hash === '/customer' && (
-        <div style={{ minHeight: '100vh', backgroundColor: '#fff' }}>
+      {location.pathname === '/customer' && (
+        <div style={{ minHeight: '100vh', backgroundColor: '#fff', textAlign: 'center', color: 'red' }}>
+          <div style={{fontSize: '12px', margin: '8px 0'}}>DEBUG: Detected pathname: {location.pathname}</div>
           <Suspense fallback={<div style={{textAlign: 'center', fontSize: '1.25rem', paddingTop: '2rem'}}>Loading page...</div>}>
             <CustomerPage />
           </Suspense>
